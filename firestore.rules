@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - name: string (required, < 100 chars)
+    //   - email: string (required, email format)
+    //   - role: string (required, enum: ['customer', 'admin'])
+    //   - address: string (optional, < 500 chars)
+    //   - createdAt: string (required, ISO 8601)
+    //
+    // Collection: products
+    // Document ID: auto-generated
+    // Fields:
+    //   - title: string (required, < 200 chars)
+    //   - description: string (required, < 2000 chars)
+    //   - price: number (required, > 0)
+    //   - category: string (required, enum: ['Men', 'Women', 'Baby'])
+    //   - stock: int (required, >= 0)
+    //   - image: string (required, URL format)
+    //   - rating: number (required, 0-5)
+    //   - sizes: list (required, strings)
+    //   - colors: list (required, strings)
+    //   - createdAt: string (required, ISO 8601)
+    //
+    // Collection: orders
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required, matches auth.uid)
+    //   - products: list (required, < 50 items)
+    //   - totalPrice: number (required, > 0)
+    //   - paymentStatus: string (required, enum: ['pending', 'paid', 'failed'])
+    //   - orderStatus: string (required, enum: ['processing', 'shipped', 'delivered', 'cancelled'])
+    //   - shippingAddress: string (required, < 500 chars)
+    //   - createdAt: string (required, ISO 8601)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "smnabilausaf@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.keys().hasOnly(['uid', 'name', 'email', 'role', 'address', 'createdAt']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             isValidEmail(data.email) &&
+             data.role in ['customer', 'admin'] &&
+             (!('address' in data) || (data.address is string && data.address.size() < 500)) &&
+             isValidDateString(data.createdAt);
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasOnly(['title', 'description', 'price', 'category', 'stock', 'image', 'rating', 'sizes', 'colors', 'createdAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.description is string && data.description.size() > 0 && data.description.size() < 2000 &&
+             data.price is number && data.price > 0 &&
+             data.category in ['Men', 'Women', 'Baby'] &&
+             data.stock is int && data.stock >= 0 &&
+             isValidUrl(data.image) &&
+             data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+             data.sizes is list && data.colors is list &&
+             isValidDateString(data.createdAt);
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasOnly(['userId', 'products', 'totalPrice', 'paymentStatus', 'orderStatus', 'shippingAddress', 'createdAt']) &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.products is list && data.products.size() > 0 && data.products.size() < 50 &&
+             data.totalPrice is number && data.totalPrice > 0 &&
+             data.paymentStatus in ['pending', 'paid', 'failed'] &&
+             data.orderStatus in ['processing', 'shipped', 'delivered', 'cancelled'] &&
+             data.shippingAddress is string && data.shippingAddress.size() > 0 && data.shippingAddress.size() < 500 &&
+             isValidDateString(data.createdAt);
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'customer' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isValidProduct(request.resource.data);
+      allow update, delete: if isAdmin() && isValidProduct(request.resource.data);
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidOrder(request.resource.data);
+      allow update: if isAdmin() && isValidOrder(request.resource.data);
+      allow delete: if false;
+    }
+  }
+}
