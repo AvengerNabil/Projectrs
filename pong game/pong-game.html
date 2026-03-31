@@ -103,6 +103,13 @@
         button:active {
             transform: scale(0.98);
         }
+
+        .winning-condition {
+            color: #FFD700;
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -127,6 +134,7 @@
             <p>🖱️ Move Mouse Up/Down to control left paddle</p>
             <p>⬆️ ⬇️ Arrow Keys also work</p>
             <p><strong>Goal:</strong> Bounce the ball past the computer's paddle to score!</p>
+            <div class="winning-condition">⭐ First to 21 points wins! ⭐</div>
             <div class="button-group">
                 <button onclick="resetGame()">Reset Game</button>
                 <button onclick="togglePause()">Pause/Resume</button>
@@ -141,6 +149,9 @@
         // Game variables
         let gameRunning = true;
         let gamePaused = false;
+        let gameOver = false;
+        let winner = null;
+        const WINNING_SCORE = 21;
 
         // Paddle properties
         const paddleWidth = 10;
@@ -249,6 +260,7 @@
             }
 
             updateScore();
+            checkWinCondition();
         }
 
         function checkPaddleCollision(paddle) {
@@ -285,6 +297,18 @@
             document.getElementById('computerScore').textContent = computer.score;
         }
 
+        function checkWinCondition() {
+            if (player.score >= WINNING_SCORE) {
+                gameOver = true;
+                winner = 'player';
+                gamePaused = true;
+            } else if (computer.score >= WINNING_SCORE) {
+                gameOver = true;
+                winner = 'computer';
+                gamePaused = true;
+            }
+        }
+
         // Drawing functions
         function drawPaddle(paddle) {
             ctx.fillStyle = paddle === player ? '#00FF00' : '#FF6B6B';
@@ -316,6 +340,29 @@
             ctx.setLineDash([]);
         }
 
+        function drawGameOver() {
+            // Semi-transparent overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw game over message
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 50px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
+
+            // Draw winner message
+            ctx.fillStyle = winner === 'player' ? '#00FF00' : '#FF6B6B';
+            ctx.font = 'bold 40px Arial';
+            const winnerText = winner === 'player' ? '🎉 YOU WIN! 🎉' : '💻 COMPUTER WINS! 💻';
+            ctx.fillText(winnerText, canvas.width / 2, canvas.height / 2 + 20);
+
+            // Draw final score
+            ctx.fillStyle = 'white';
+            ctx.font = '24px Arial';
+            ctx.fillText(`Final Score: ${player.score} - ${computer.score}`, canvas.width / 2, canvas.height / 2 + 70);
+        }
+
         function draw() {
             // Clear canvas
             ctx.fillStyle = '#1a1a2e';
@@ -332,8 +379,11 @@
             drawPaddle(computer);
             drawBall();
 
-            // Draw pause text
-            if (gamePaused) {
+            // Draw game over screen
+            if (gameOver) {
+                drawGameOver();
+            } else if (gamePaused) {
+                // Draw pause text
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = 'white';
@@ -345,7 +395,7 @@
 
         // Game loop
         function gameLoop() {
-            if (!gamePaused && gameRunning) {
+            if (!gamePaused && gameRunning && !gameOver) {
                 updatePlayerPaddle();
                 updateComputerPaddle();
                 updateBall();
@@ -363,10 +413,14 @@
             resetBall();
             updateScore();
             gamePaused = false;
+            gameOver = false;
+            winner = null;
         }
 
         function togglePause() {
-            gamePaused = !gamePaused;
+            if (!gameOver) {
+                gamePaused = !gamePaused;
+            }
         }
 
         // Start game
