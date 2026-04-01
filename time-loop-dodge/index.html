@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Time Loop Dodge - Fast-Paced Arcade Game">
+    <title>Time Loop Dodge</title>
+    
+    <!-- Diagnostic CSS -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0a0a14;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Diagnostic Script -->
+    <script>
+        console.log('%c⏱️ Time Loop Dodge - Initializing...', 'color: cyan; font-size: 16px; font-weight: bold;');
+        window.DEBUG_MODE = true;
+        window.GAME_START_TIME = Date.now();
+    </script>
+</head>
+<body>
+    <div id="gameContainer" class="game-container">
+        <!-- Canvas (MAIN RENDER TARGET) -->
+        <canvas id="gameCanvas" style="display: block; width: 100%; height: 100%; background: #0a0a14;"></canvas>
+
+        <!-- HUD Layer -->
+        <div id="hud" class="hud">
+            <div class="hud-item score-display">
+                <div class="hud-label">Score</div>
+                <div id="scoreValue" class="hud-value">0</div>
+            </div>
+            <div class="hud-item loop-counter">
+                <div class="hud-label">Loop</div>
+                <div id="loopCount" class="hud-value">0</div>
+            </div>
+            <div class="hud-item time-display">
+                <div class="hud-label">Time</div>
+                <div id="timeIndicator" class="time-indicator">
+                    <div id="timerBar" class="timer-bar"></div>
+                    <div id="timeValue" class="time-value">0s</div>
+                </div>
+            </div>
+            <div class="hud-item combo-display">
+                <div class="hud-label">Combo</div>
+                <div id="comboValue" class="hud-value">0x</div>
+            </div>
+            <div class="hud-item lives-display">
+                <div class="hud-label">Lives</div>
+                <div id="livesValue" class="hud-value">
+                    <span id="life1" class="life-dot">●</span>
+                    <span id="life2" class="life-dot">●</span>
+                    <span id="life3" class="life-dot">●</span>
+                </div>
+            </div>
+            <button id="pauseBtn" class="control-btn pause-btn" title="Pause Game">⏸</button>
+            <button id="soundBtn" class="control-btn sound-btn" title="Toggle Sound">🔊</button>
+        </div>
+
+        <!-- Effects -->
+        <div id="loopResetOverlay" class="loop-reset-overlay hidden"></div>
+        <div id="glitchContainer" class="glitch-container hidden">
+            <div class="glitch-line"></div>
+            <div class="glitch-line"></div>
+            <div class="glitch-line"></div>
+        </div>
+
+        <!-- Menus -->
+        <div id="pauseMenu" class="menu pause-menu hidden">
+            <div class="menu-content">
+                <h1>⏸ Paused</h1>
+                <div class="menu-stats">
+                    <p><span class="stat-label">Score:</span> <span id="pauseScore">0</span></p>
+                    <p><span class="stat-label">Loops Survived:</span> <span id="pauseLoops">0</span></p>
+                    <p><span class="stat-label">Difficulty:</span> <span id="pauseDifficulty">1.0x</span></p>
+                </div>
+                <div class="menu-buttons">
+                    <button id="resumeBtn" class="btn btn-primary">Resume</button>
+                    <button id="pauseRestartBtn" class="btn btn-secondary">Restart</button>
+                    <button id="settingsBtn" class="btn btn-secondary">Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsMenu" class="menu settings-menu hidden">
+            <div class="menu-content">
+                <h1>⚙️ Settings</h1>
+                <div class="settings-group">
+                    <label class="settings-item">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span>Sound Effects</span>
+                    </label>
+                    <label class="settings-item">
+                        <input type="checkbox" id="glitchToggle" checked>
+                        <span>Glitch Effects</span>
+                    </label>
+                    <label class="settings-item">
+                        <input type="checkbox" id="particlesToggle" checked>
+                        <span>Particles</span>
+                    </label>
+                    <label class="settings-item">
+                        <input type="checkbox" id="screenShakeToggle" checked>
+                        <span>Screen Shake</span>
+                    </label>
+                </div>
+                <div class="menu-buttons">
+                    <button id="backBtn" class="btn btn-primary">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameOverMenu" class="menu game-over-menu hidden">
+            <div class="menu-content">
+                <h1>💀 Game Over</h1>
+                <div class="game-stats">
+                    <p><span class="stat-label">Final Score:</span> <span id="finalScore">0</span></p>
+                    <p><span class="stat-label">Loops Survived:</span> <span id="finalLoops">0</span></p>
+                    <p><span class="stat-label">Max Combo:</span> <span id="maxCombo">0</span>x</p>
+                    <p><span class="stat-label">Difficulty Reached:</span> <span id="finalDifficulty">1.0x</span></p>
+                </div>
+                <div class="menu-buttons">
+                    <button id="restartBtn" class="btn btn-primary">Play Again</button>
+                    <button id="homeBtn" class="btn btn-secondary">Home</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="startMenu" class="menu start-menu">
+            <div class="menu-content">
+                <h1 class="game-title">⏱️ Time Loop Dodge</h1>
+                <p class="game-subtitle">Survive the infinite loop</p>
+                <div class="game-instructions">
+                    <h3>How to Play</h3>
+                    <p><strong>Avoid obstacles</strong> as the loop resets every few seconds.</p>
+                    <p><strong>Each loop gets harder:</strong> More obstacles, faster speed, shorter time!</p>
+                    <p><strong>Survive without taking damage</strong> to increase your score and combo.</p>
+                    <div class="controls-guide">
+                        <h4>🎮 Desktop Controls</h4>
+                        <p>⬅️ ➡️ Arrow Keys to Move | Space to Sprint</p>
+                        <h4>📱 Mobile Controls</h4>
+                        <p>Swipe in any direction | Double-tap to Sprint</p>
+                    </div>
+                </div>
+                <div class="difficulty-selector">
+                    <label>Select Difficulty:</label>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+                        <button class="difficulty-btn" data-difficulty="normal" active>Normal</button>
+                        <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+                        <button class="difficulty-btn" data-difficulty="hardcore">Hardcore</button>
+                    </div>
+                </div>
+                <div class="menu-buttons">
+                    <button id="startBtn" class="btn btn-primary">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobileControls" class="mobile-controls hidden">
+            <div class="d-pad">
+                <button class="d-pad-btn up" data-direction="up">▲</button>
+                <div class="d-pad-middle">
+                    <button class="d-pad-btn left" data-direction="left">◄</button>
+                    <button class="d-pad-btn right" data-direction="right">►</button>
+                </div>
+                <button class="d-pad-btn down" data-direction="down">▼</button>
+            </div>
+            <button id="sprintBtn" class="action-btn sprint-btn">Sprint</button>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notificationContainer" class="notification-container"></div>
+
+        <!-- FPS Counter -->
+        <div id="fpsCounter" class="fps-counter hidden">
+            <span id="fpsValue">60 FPS</span>
+        </div>
+    </div>
+
+    <!-- SCRIPTS (IN CORRECT ORDER) -->
+    <script src="js/utils.js"></script>
+    <script src="js/sound.js"></script>
+    <script src="js/particle.js"></script>
+    <script src="js/loop-manager.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/obstacle.js"></script>
+    <script src="js/game.js"></script>
+
+    <!-- Post-Load Diagnostic -->
+    <script>
+        window.addEventListener('load', () => {
+            const elapsed = Date.now() - window.GAME_START_TIME;
+            console.log(`%c✓ Game fully loaded in ${elapsed}ms`, 'color: lime; font-weight: bold;');
+            
+            // Verify all systems
+            const systems = {
+                'Utils': typeof Utils !== 'undefined',
+                'SoundManager': typeof SoundManager !== 'undefined',
+                'ParticleSystem': typeof ParticleSystem !== 'undefined',
+                'LoopManager': typeof LoopManager !== 'undefined',
+                'Player': typeof Player !== 'undefined',
+                'Obstacle': typeof Obstacle !== 'undefined',
+                'Game': typeof Game !== 'undefined'
+            };
+            
+            console.log('%c=== SYSTEM STATUS ===', 'color: cyan; font-weight: bold;');
+            Object.entries(systems).forEach(([name, loaded]) => {
+                const status = loaded ? '✓' : '✗';
+                const color = loaded ? 'lime' : 'red';
+                console.log(`%c${status} ${name}`, `color: ${color}`);
+            });
+            
+            const allReady = Object.values(systems).every(v => v);
+            if (allReady) {
+                console.log('%c✓ ALL SYSTEMS READY - GAME STARTING', 'color: lime; font-size: 14px; font-weight: bold;');
+            } else {
+                console.error('%c✗ SOME SYSTEMS FAILED', 'color: red; font-size: 14px; font-weight: bold;');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,904 @@
+/* ============================================
+   TIME LOOP DODGE - MAIN STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Primary Colors */
+    --color-primary: #00ffff;
+    --color-secondary: #ff00ff;
+    --color-accent: #ffff00;
+    --color-danger: #ff0040;
+    --color-success: #00ff40;
+    
+    /* Background Colors */
+    --bg-dark: #0a0a14;
+    --bg-darker: #050508;
+    --surface-dark: #151520;
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #b0b8ff;
+    --text-muted: #6a7a9f;
+    
+    /* Effects */
+    --glow-primary: 0 0 15px rgba(0, 255, 255, 0.6);
+    --glow-secondary: 0 0 15px rgba(255, 0, 255, 0.6);
+    --glow-danger: 0 0 20px rgba(255, 0, 64, 0.8);
+    
+    /* Transitions */
+    --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   BODY & CONTAINER
+   ============================================ */
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-darker);
+    font-family: 'Courier New', monospace;
+    color: var(--text-primary);
+}
+
+.game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    overflow: hidden;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bg-darker) 0%, var(--surface-dark) 100%);
+    cursor: crosshair;
+}
+
+/* ============================================
+   HUD (Heads-Up Display)
+   ============================================ */
+
+.hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px 20px;
+    pointer-events: none;
+    z-index: 50;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.hud-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 15px;
+    background: rgba(10, 10, 20, 0.7);
+    border: 2px solid var(--color-primary);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--glow-primary);
+    pointer-events: auto;
+}
+
+.hud-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.hud-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--color-primary);
+    text-shadow: var(--glow-primary);
+}
+
+.time-indicator {
+    width: 120px;
+    position: relative;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 255, 255, 0.2);
+    border: 1px solid var(--color-primary);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.timer-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    width: 100%;
+    border-radius: 3px;
+    box-shadow: var(--glow-primary);
+    animation: timer-drain linear forwards;
+}
+
+@keyframes timer-drain {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.time-value {
+    font-size: 14px;
+    color: var(--color-primary);
+    text-align: center;
+}
+
+.time-display.danger .timer-bar {
+    border-color: var(--color-danger);
+}
+
+.time-display.danger .timer-bar::after {
+    background: linear-gradient(90deg, var(--color-danger), var(--color-secondary));
+}
+
+.time-display.danger .time-value {
+    color: var(--color-danger);
+    animation: pulse-danger 0.3s ease-in-out;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.life-dot {
+    margin: 0 2px;
+    font-size: 14px;
+}
+
+.life-dot.empty {
+    opacity: 0.3;
+    filter: grayscale(1);
+}
+
+/* Control Buttons */
+.control-btn {
+    width: 45px;
+    height: 45px;
+    background: rgba(10, 10, 20, 0.7);
+    border: 2px solid var(--color-primary);
+    border-radius: 8px;
+    color: var(--color-primary);
+    font-size: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--glow-primary);
+    transition: all var(--transition-fast);
+    pointer-events: auto;
+}
+
+.control-btn:hover {
+    background: rgba(0, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.control-btn.muted {
+    opacity: 0.5;
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+}
+
+/* ============================================
+   EFFECTS
+   ============================================ */
+
+.loop-reset-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 0, 255, 0.5) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 40;
+    opacity: 0;
+    animation: loop-flash 0.3s ease-out forwards;
+}
+
+.loop-reset-overlay.hidden {
+    display: none;
+}
+
+@keyframes loop-flash {
+    0% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+/* Glitch Effect */
+.glitch-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 41;
+}
+
+.glitch-container.hidden {
+    display: none;
+}
+
+.glitch-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-secondary), transparent);
+    opacity: 0;
+    animation: glitch-scan 0.2s ease-in-out;
+}
+
+.glitch-line:nth-child(1) {
+    top: 20%;
+    animation-delay: 0s;
+}
+
+.glitch-line:nth-child(2) {
+    top: 50%;
+    animation-delay: 0.05s;
+}
+
+.glitch-line:nth-child(3) {
+    top: 80%;
+    animation-delay: 0.1s;
+}
+
+@keyframes glitch-scan {
+    0%, 100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Screen Shake */
+.screen-shake {
+    animation: shake 0.2s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-5px, -5px); }
+    50% { transform: translate(5px, 5px); }
+    75% { transform: translate(-5px, 5px); }
+}
+
+/* ============================================
+   MENUS
+   ============================================ */
+
+.menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 5, 8, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 200;
+    animation: fadeIn var(--transition-normal);
+    pointer-events: all;
+}
+
+.menu.hidden {
+    display: none;
+    pointer-events: none;
+}
+
+.menu-content {
+    text-align: center;
+    padding: 40px;
+    background: rgba(21, 21, 32, 0.95);
+    border: 2px solid var(--color-primary);
+    border-radius: 16px;
+    box-shadow: 
+        0 0 30px rgba(0, 255, 255, 0.3),
+        0 0 60px rgba(0, 255, 255, 0.1);
+    max-width: 550px;
+    width: 90%;
+    animation: slideUp var(--transition-normal);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.menu h1 {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: var(--color-primary);
+    text-shadow: var(--glow-primary);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.game-title {
+    font-size: 56px !important;
+    background: linear-gradient(45deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: title-glow 2s ease-in-out infinite;
+}
+
+@keyframes title-glow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 40px rgba(255, 0, 255, 0.5);
+    }
+}
+
+.game-subtitle {
+    font-size: 16px;
+    color: var(--color-secondary);
+    margin-bottom: 25px;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+}
+
+.game-instructions {
+    text-align: left;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-left: 3px solid var(--color-secondary);
+    margin: 20px 0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.game-instructions h3 {
+    color: var(--color-primary);
+    margin-bottom: 10px;
+    text-shadow: var(--glow-primary);
+}
+
+.game-instructions p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.controls-guide {
+    background: rgba(255, 0, 255, 0.05);
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0 0 0;
+}
+
+.controls-guide h4 {
+    color: var(--color-secondary);
+    margin: 10px 0 5px 0;
+    font-size: 12px;
+}
+
+.controls-guide p {
+    font-size: 12px;
+    margin: 4px 0;
+}
+
+.menu-stats,
+.game-stats {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border: 1px solid var(--color-primary);
+}
+
+.menu-stats p,
+.game-stats p {
+    font-size: 16px;
+    margin: 10px 0;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    color: var(--color-secondary);
+    font-weight: bold;
+}
+
+.menu-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: var(--bg-dark);
+    border-color: var(--color-primary);
+    box-shadow: var(--glow-primary);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    box-shadow: var(--glow-secondary);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 0, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+}
+
+/* Difficulty Selector */
+.difficulty-selector {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.difficulty-selector label {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.difficulty-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.difficulty-btn {
+    padding: 8px 16px;
+    background: rgba(0, 255, 255, 0.1);
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.difficulty-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+}
+
+.difficulty-btn[active] {
+    background: var(--color-primary);
+    color: var(--bg-dark);
+    box-shadow: var(--glow-primary);
+}
+
+/* Settings Menu */
+.settings-group {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin: 8px 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.settings-item:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-left: 3px solid var(--color-primary);
+    padding-left: 9px;
+}
+
+.settings-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.settings-item span {
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+.difficulty-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.difficulty-select {
+    background: rgba(0, 255, 255, 0.1);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    margin-left: 10px;
+}
+
+.difficulty-select option {
+    background: var(--bg-dark);
+    color: var(--color-primary);
+}
+
+/* ============================================
+   MOBILE CONTROLS
+   ============================================ */
+
+.mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 20px;
+    pointer-events: all;
+    z-index: 50;
+}
+
+.mobile-controls.hidden {
+    display: none;
+}
+
+.d-pad {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+}
+
+.d-pad-btn {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 255, 255, 0.2);
+    border: 2px solid var(--color-primary);
+    border-radius: 4px;
+    color: var(--color-primary);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-weight: bold;
+}
+
+.d-pad-btn:active {
+    background: rgba(0, 255, 255, 0.5);
+    transform: scale(0.9);
+}
+
+.d-pad-middle {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    width: 60px;
+    height: 130px;
+    background: rgba(255, 0, 64, 0.2);
+    border: 2px solid var(--color-danger);
+    border-radius: 8px;
+    color: var(--color-danger);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    padding: 5px;
+}
+
+.action-btn:active {
+    background: rgba(255, 0, 64, 0.5);
+    transform: scale(0.95);
+}
+
+/* ============================================
+   NOTIFICATIONS
+   ============================================ */
+
+.notification-container {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.notification {
+    padding: 12px 16px;
+    background: rgba(0, 255, 255, 0.2);
+    border: 2px solid var(--color-primary);
+    border-radius: 6px;
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: bold;
+    animation: slideInRight var(--transition-fast);
+    box-shadow: var(--glow-primary);
+}
+
+.notification.success {
+    border-color: var(--color-success);
+    background: rgba(0, 255, 64, 0.2);
+    color: var(--color-success);
+}
+
+.notification.danger {
+    border-color: var(--color-danger);
+    background: rgba(255, 0, 64, 0.2);
+    color: var(--color-danger);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   FPS COUNTER
+   ============================================ */
+
+.fps-counter {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-size: 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 30;
+}
+
+.fps-counter.hidden {
+    display: none;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .hud {
+        flex-direction: column;
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .hud-item {
+        padding: 8px 12px;
+        flex-shrink: 0;
+    }
+
+    .hud-label {
+        font-size: 9px;
+    }
+
+    .hud-value {
+        font-size: 14px;
+    }
+
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .menu-content {
+        padding: 25px;
+        width: 95%;
+    }
+
+    .menu h1 {
+        font-size: 36px;
+    }
+
+    .game-title {
+        font-size: 40px !important;
+    }
+
+    .game-instructions {
+        font-size: 12px;
+        padding: 15px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hud {
+        padding: 8px;
+        gap: 5px;
+    }
+
+    .hud-item {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .hud-label {
+        font-size: 8px;
+    }
+
+    .hud-value {
+        font-size: 12px;
+    }
+
+    .control-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+
+    .menu-content {
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .menu h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .game-title {
+        font-size: 32px !important;
+    }
+
+    .game-subtitle {
+        font-size: 13px;
+    }
+
+    .game-instructions {
+        font-size: 11px;
+        padding: 12px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+
+    .difficulty-buttons {
+        gap: 6px;
+    }
+
+    .difficulty-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .mobile-controls {
+        bottom: 10px;
+        left: 10px;
+        gap: 15px;
+    }
+
+    .d-pad-btn {
+        width: 45px;
+        height: 45px;
+    }
+
+    .action-btn {
+        width: 50px;
+        height: 110px;
+        font-size: 11px;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+    .hud {
+        padding: 8px;
+    }
+
+    .control-btn {
+        width: 35px;
+        height: 35px;
+    }
+
+    .menu-content {
+        max-height: 85vh;
+        padding: 20px;
+    }
+}
