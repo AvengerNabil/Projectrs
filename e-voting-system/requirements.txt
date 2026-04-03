@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+face-recognition
+opencv-python
+numpy
+web3
+python-dotenv
+PyQt5
+requests
