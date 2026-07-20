@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TTS Diagnostic</title>
+<style>
+  body { font-family: monospace; background: #111; color: #eee; padding: 30px; }
+  button { margin: 6px; padding: 10px 20px; font-size: 14px; cursor: pointer; background: #333; color: #fff; border: 1px solid #555; border-radius: 6px; }
+  button:hover { background: #555; }
+  #log { background: #1a1a1a; border: 1px solid #333; padding: 14px; margin-top: 16px; white-space: pre-wrap; line-height: 1.6; font-size: 13px; min-height: 200px; }
+  .ok { color: #34c759; }
+  .err { color: #ff3b30; }
+  .info { color: #64d2ff; }
+</style>
+</head>
+<body>
+<h2>Chrome Web Speech API — TTS Diagnostic</h2>
+
+<button onclick="listVoices()">1. List Available Voices</button>
+<button onclick="testBasic()">2. Basic Speak Test</button>
+<button onclick="testWithVoice()">3. Speak with en-US Voice</button>
+<button onclick="testGame()">4. Simulate Game Word</button>
+<button onclick="clearLog()">Clear Log</button>
+
+<div id="log">Waiting for tests...</div>
+
+<script>
+const log = document.getElementById('log');
+
+function addLog(msg, cls='') {
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = new Date().toLocaleTimeString() + ' — ' + msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function clearLog() {
+  log.innerHTML = '';
+}
+
+function listVoices() {
+  if (!('speechSynthesis' in window)) {
+    addLog('ERROR: speechSynthesis is not available in this browser!', 'err');
+    return;
+  }
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) {
+    addLog('No voices loaded yet. Waiting for onvoiceschanged...', 'info');
+    window.speechSynthesis.onvoiceschanged = () => {
+      const v2 = window.speechSynthesis.getVoices();
+      addLog('Voices loaded after event: ' + v2.length, 'ok');
+      v2.forEach(v => addLog('  Voice: ' + v.name + ' | ' + v.lang + ' | local:' + v.localService, 'info'));
+    };
+  } else {
+    addLog('Found ' + voices.length + ' voices:', 'ok');
+    voices.forEach(v => addLog('  Voice: ' + v.name + ' | ' + v.lang + ' | local:' + v.localService, 'info'));
+  }
+}
+
+function testBasic() {
+  if (!('speechSynthesis' in window)) { addLog('Not supported', 'err'); return; }
+  addLog('Attempting basic speak...', 'info');
+  window.speechSynthesis.cancel();
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance('hello');
+    u.onstart  = () => addLog('onstart fired — audio should be playing', 'ok');
+    u.onend    = () => addLog('onend fired — speech finished', 'ok');
+    u.onerror  = (e) => addLog('onerror: ' + e.error, 'err');
+    addLog('speaking="' + u.text + '" pending before speak()');
+    window.speechSynthesis.speak(u);
+    addLog('speak() called. speaking=' + window.speechSynthesis.speaking + ' pending=' + window.speechSynthesis.pending);
+  }, 100);
+}
+
+function testWithVoice() {
+  if (!('speechSynthesis' in window)) { addLog('Not supported', 'err'); return; }
+  const voices = window.speechSynthesis.getVoices();
+  const voice = voices.find(v => v.lang.startsWith('en') && v.localService) || voices.find(v => v.lang.startsWith('en')) || null;
+  addLog('Using voice: ' + (voice ? voice.name : 'none (browser default)'), 'info');
+  window.speechSynthesis.cancel();
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance('theater');
+    u.lang = 'en-US';
+    u.rate = 0.9;
+    if (voice) u.voice = voice;
+    u.onstart = () => addLog('✓ onstart: speaking "theater"', 'ok');
+    u.onend   = () => addLog('✓ onend: done', 'ok');
+    u.onerror = (e) => addLog('✗ onerror: ' + e.error, 'err');
+    window.speechSynthesis.speak(u);
+  }, 100);
+}
+
+function testGame() {
+  // Simulate exactly what game.js does
+  if (!('speechSynthesis' in window)) { addLog('Not supported', 'err'); return; }
+  const word = 'computer';
+  addLog('Simulating game pronounceWord("' + word + '")...', 'info');
+  window.speechSynthesis.cancel();
+  setTimeout(() => {
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const ttsVoice = voices.find(v => v.lang === 'en-US' && v.localService) 
+                  || voices.find(v => v.lang.startsWith('en') && v.localService)
+                  || voices.find(v => v.lang === 'en-US')
+                  || voices.find(v => v.lang.startsWith('en'))
+                  || null;
+    if (ttsVoice) utterance.voice = ttsVoice;
+    addLog('Voice used: ' + (ttsVoice ? ttsVoice.name : 'browser default'), 'info');
+    utterance.onstart = () => addLog('✓ Game TTS works! Word spoken: ' + word, 'ok');
+    utterance.onend   = () => addLog('✓ Finished', 'ok');
+    utterance.onerror = (e) => addLog('✗ Error: ' + e.error, 'err');
+    window.speechSynthesis.speak(utterance);
+  }, 80);
+}
+
+// Auto list voices on load
+window.addEventListener('load', () => {
+  addLog('Page loaded. speechSynthesis available: ' + ('speechSynthesis' in window), 'info');
+  if ('speechSynthesis' in window) {
+    addLog('speaking=' + window.speechSynthesis.speaking + ' pending=' + window.speechSynthesis.pending + ' paused=' + window.speechSynthesis.paused, 'info');
+  }
+});
+</script>
+</body>
+</html>
