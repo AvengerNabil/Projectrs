@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Smart Electronics — Your premium destination for Smart TVs, Refrigerators, Air Conditioners, Fans, and Kitchen Appliances. Shop the best deals with free shipping.">
+  <title>Smart Electronics — Premium Electronics Store</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">⚡</div>
+        <span>Smart Electronics</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="cart.html">Cart</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <a href="cart.html" class="cart-icon-wrapper" title="Shopping Cart">
+          🛒
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </a>
+        <button class="hamburger" id="hamburger" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            New Arrivals 2026
+          </div>
+          <h1>
+            Discover Premium<br>
+            <span class="highlight">Smart Electronics</span><br>
+            For Modern Living
+          </h1>
+          <p>
+            Explore our curated collection of cutting-edge electronics. From stunning 8K TVs to energy-efficient appliances — experience technology that transforms your lifestyle.
+          </p>
+          <div class="hero-buttons">
+            <a href="products.html" class="btn btn-primary btn-lg">
+              🛍️ Shop Now
+            </a>
+            <a href="#categories" class="btn btn-secondary btn-lg" style="border-color: rgba(255,255,255,0.2); color: #CBD5E1;">
+              Explore Categories
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <h3>500+</h3>
+              <p>Premium Products</p>
+            </div>
+            <div class="hero-stat">
+              <h3>50K+</h3>
+              <p>Happy Customers</p>
+            </div>
+            <div class="hero-stat">
+              <h3>4.8★</h3>
+              <p>Average Rating</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURED PRODUCTS ========== -->
+  <section class="featured-products section" id="featured">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">🔥 Trending Now</span>
+        <h2>Featured Products</h2>
+        <p>Handpicked top-sellers loved by thousands of customers</p>
+      </div>
+      <div class="products-slider-wrapper animate-on-scroll">
+        <button class="slider-btn prev" aria-label="Previous">◀</button>
+        <div class="products-slider" id="featuredSlider">
+          <!-- Populated by JS -->
+        </div>
+        <button class="slider-btn next" aria-label="Next">▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CATEGORIES ========== -->
+  <section class="categories section" id="categories">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">📂 Browse</span>
+        <h2>Shop by Category</h2>
+        <p>Find exactly what you're looking for in our organized categories</p>
+      </div>
+      <div class="categories-grid animate-on-scroll">
+        <a href="products.html?category=TV+%26+Display" class="category-card">
+          <div class="category-icon">📺</div>
+          <h3>TV & Display</h3>
+          <p>Smart TVs & Monitors</p>
+        </a>
+        <a href="products.html?category=Kitchen+Appliances" class="category-card">
+          <div class="category-icon">🍳</div>
+          <h3>Kitchen Appliances</h3>
+          <p>Refrigerators & Cookers</p>
+        </a>
+        <a href="products.html?category=Cooling" class="category-card">
+          <div class="category-icon">❄️</div>
+          <h3>Cooling</h3>
+          <p>AC & Fans</p>
+        </a>
+        <a href="products.html" class="category-card">
+          <div class="category-icon">🏷️</div>
+          <h3>All Products</h3>
+          <p>Browse Everything</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SPECIAL OFFERS ========== -->
+  <section class="special-offers section" id="offers">
+    <div class="container">
+      <div class="offers-grid">
+        <div class="offers-content animate-on-scroll">
+          <span class="badge" style="background: rgba(6,182,212,0.15); color: #67E8F9;">🎉 Limited Time</span>
+          <h2>Summer Sale<br>Up to 25% Off</h2>
+          <p>Don't miss out on our biggest sale of the year. Premium electronics at unbeatable prices with free shipping on orders over $500.</p>
+          <ul class="offers-features">
+            <li>
+              <span class="icon">✓</span>
+              Free shipping on orders over $500
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              Extended 2-year warranty on all products
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              30-day hassle-free returns
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              24/7 customer support
+            </li>
+          </ul>
+          <a href="products.html" class="btn btn-accent btn-lg">
+            🛍️ Shop the Sale
+          </a>
+        </div>
+        <div class="offers-image animate-on-scroll">
+          <div class="offer-card-visual">
+            <div class="big-percent">
+              25%
+              <span>OFF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ANIMATED STATS ========== -->
+  <section class="stats section" id="stats">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">📊 Our Impact</span>
+        <h2>Trusted by Thousands</h2>
+        <p>Numbers that showcase our commitment to quality and customer satisfaction</p>
+      </div>
+      <div class="stats-grid animate-on-scroll">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-number" data-target="500" data-suffix="+">0</div>
+          <div class="stat-label">Products Available</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">😊</div>
+          <div class="stat-number" data-target="50000" data-suffix="+">0</div>
+          <div class="stat-label">Happy Customers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-number" data-target="12000" data-suffix="+">0</div>
+          <div class="stat-label">5-Star Reviews</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-number" data-target="25" data-suffix="+">0</div>
+          <div class="stat-label">Industry Awards</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TESTIMONIALS ========== -->
+  <section class="testimonials section" id="testimonials">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <span class="badge">💬 Reviews</span>
+        <h2>What Our Customers Say</h2>
+        <p>Real reviews from real customers who love our products</p>
+      </div>
+      <div class="testimonials-grid animate-on-scroll">
+        <div class="testimonial-card">
+          <div class="quote-icon">❝</div>
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">
+            "The 65-inch OLED TV exceeded all my expectations! The picture quality is absolutely stunning and the smart features make it a joy to use every day."
+          </p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JR</div>
+            <div class="testimonial-author-info">
+              <h4>James Rodriguez</h4>
+              <p>Verified Buyer</p>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="quote-icon">❝</div>
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">
+            "Best refrigerator I've ever owned. The French door design is so practical, and it keeps everything perfectly fresh. The energy efficiency is a huge bonus!"
+          </p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SP</div>
+            <div class="testimonial-author-info">
+              <h4>Sarah Phillips</h4>
+              <p>Verified Buyer</p>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="quote-icon">❝</div>
+          <div class="testimonial-stars">★★★★⭐</div>
+          <p class="testimonial-text">
+            "The inverter AC cools my room in minutes and runs so quietly I forget it's on. Customer service was excellent and delivery was right on time."
+          </p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MK</div>
+            <div class="testimonial-author-info">
+              <h4>Michael Kim</h4>
+              <p>Verified Buyer</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== NEWSLETTER ========== -->
+  <section class="newsletter section" id="newsletter">
+    <div class="container">
+      <div class="newsletter-wrapper animate-on-scroll">
+        <h2>Stay Updated with Latest Deals</h2>
+        <p>Subscribe to our newsletter and never miss exclusive offers and new arrivals.</p>
+        <form class="newsletter-form" id="newsletterForm">
+          <input type="email" placeholder="Enter your email address" required>
+          <button type="submit" class="btn btn-accent">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- About -->
+        <div class="footer-about">
+          <div class="footer-logo">
+            <div class="logo-icon">⚡</div>
+            <span>Smart Electronics</span>
+          </div>
+          <p>Your trusted destination for premium electronics. We offer cutting-edge technology with exceptional customer service and unbeatable prices since 2015.</p>
+          <div class="social-links">
+            <a href="#" title="Facebook" aria-label="Facebook">📘</a>
+            <a href="#" title="Twitter" aria-label="Twitter">🐦</a>
+            <a href="#" title="Instagram" aria-label="Instagram">📸</a>
+            <a href="#" title="YouTube" aria-label="YouTube">🎬</a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="cart.html">Shopping Cart</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <!-- Categories -->
+        <div class="footer-section">
+          <h3>Categories</h3>
+          <ul>
+            <li><a href="products.html?category=TV+%26+Display">TV & Display</a></li>
+            <li><a href="products.html?category=Kitchen+Appliances">Kitchen Appliances</a></li>
+            <li><a href="products.html?category=Cooling">Cooling</a></li>
+            <li><a href="products.html">All Products</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact -->
+        <div class="footer-section">
+          <h3>Contact Info</h3>
+          <div class="footer-contact-item">
+            <div class="icon">📍</div>
+            <span>sayednogor,vatara,badda,dhaka</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">📞</div>
+            <span>01712668528</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">✉️</div>
+            <span>riadshikder10@gmail.com</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">🕐</div>
+            <span>Mon-Sat: 9 AM – 9 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 Smart Electronics. All rights reserved.</p>
+        <p>Designed with ❤️ for modern living</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // Initialize home page specific features
+    document.addEventListener('DOMContentLoaded', initHomePage);
+  </script>
+</body>
+</html>

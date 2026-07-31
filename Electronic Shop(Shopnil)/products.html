@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse our complete collection of premium electronics. Smart TVs, Refrigerators, Air Conditioners, Fans, and Kitchen Appliances at the best prices.">
+  <title>Products — Smart Electronics</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">⚡</div>
+        <span>Smart Electronics</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html" class="active">Products</a></li>
+        <li><a href="cart.html">Cart</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <a href="cart.html" class="cart-icon-wrapper" title="Shopping Cart">
+          🛒
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </a>
+        <button class="hamburger" id="hamburger" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== PRODUCTS PAGE ========== -->
+  <main class="products-page page-content">
+    <div class="container">
+      <div class="products-page-header">
+        <h1>Our Products</h1>
+        <p>Discover our premium collection of electronics for every need</p>
+      </div>
+
+      <div class="products-layout">
+        <!-- Filters Sidebar -->
+        <aside class="filters-sidebar" id="filtersSidebar">
+          <div class="filter-section">
+            <h3>Categories</h3>
+            <label class="filter-option">
+              <input type="checkbox" name="category" value="TV & Display"> TV & Display
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="category" value="Kitchen Appliances"> Kitchen Appliances
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="category" value="Cooling"> Cooling
+            </label>
+          </div>
+
+          <div class="filter-section">
+            <h3>Price Range</h3>
+            <div class="price-inputs">
+              <input type="number" id="priceMin" placeholder="Min" min="0">
+              <span>—</span>
+              <input type="number" id="priceMax" placeholder="Max" min="0">
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <h3>Stock Status</h3>
+            <label class="filter-option">
+              <input type="checkbox" name="stock" value="in-stock" checked> In Stock
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="stock" value="low-stock" checked> Low Stock
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" name="stock" value="out-of-stock"> Out of Stock
+            </label>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn btn-primary btn-sm" onclick="applyFilters()" style="flex:1;">Apply</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetFilters()" style="flex:1;">Reset</button>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="products-main">
+          <!-- Toolbar -->
+          <div class="products-toolbar">
+            <button class="filter-toggle-btn" onclick="toggleMobileFilters()">
+              🔍 Filters
+            </button>
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off">
+            </div>
+            <div class="sort-wrapper">
+              <label for="sortSelect">Sort by:</label>
+              <select id="sortSelect">
+                <option value="featured">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name-az">Name: A to Z</option>
+                <option value="name-za">Name: Z to A</option>
+                <option value="rating">Highest Rating</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="results-count" id="resultsCount">Showing 12 products</div>
+
+          <!-- Products Grid -->
+          <div class="products-grid" id="productsGrid">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" id="pagination">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recently Viewed -->
+      <section class="recently-viewed" id="recentlyViewed" style="display:none;">
+        <div class="section-header" style="margin-bottom:24px;">
+          <h2 style="font-size:1.5rem;">Recently Viewed</h2>
+        </div>
+        <div class="recently-viewed-grid" id="recentlyViewedGrid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <div class="footer-logo">
+            <div class="logo-icon">⚡</div>
+            <span>Smart Electronics</span>
+          </div>
+          <p>Your trusted destination for premium electronics. Cutting-edge technology with exceptional service since 2015.</p>
+          <div class="social-links">
+            <a href="#" title="Facebook">📘</a>
+            <a href="#" title="Twitter">🐦</a>
+            <a href="#" title="Instagram">📸</a>
+            <a href="#" title="YouTube">🎬</a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="cart.html">Shopping Cart</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Categories</h3>
+          <ul>
+            <li><a href="products.html?category=TV+%26+Display">TV & Display</a></li>
+            <li><a href="products.html?category=Kitchen+Appliances">Kitchen Appliances</a></li>
+            <li><a href="products.html?category=Cooling">Cooling</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Contact Info</h3>
+          <div class="footer-contact-item">
+            <div class="icon">📍</div>
+            <span>sayednogor,vatara,badda,dhaka</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">📞</div>
+            <span>01712668528</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">✉️</div>
+            <span>riadshikder10@gmail.com</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Smart Electronics. All rights reserved.</p>
+        <p>Designed with ❤️ for modern living</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/products.js"></script>
+</body>
+</html>

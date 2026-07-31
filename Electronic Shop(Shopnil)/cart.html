@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Your Shopping Cart at Smart Electronics. Review your selected premium electronics before secure checkout.">
+  <title>Shopping Cart — Smart Electronics</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div class="loader-overlay">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">⚡</div>
+        <span>Smart Electronics</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="cart.html" class="active">Cart</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <a href="cart.html" class="cart-icon-wrapper" title="Shopping Cart">
+          🛒
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </a>
+        <button class="hamburger" id="hamburger" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== CART PAGE ========== -->
+  <main class="cart-page page-content">
+    <div class="container">
+      <div class="cart-page-header">
+        <h1>Your Shopping Cart</h1>
+      </div>
+
+      <div class="cart-layout" id="cartLayout">
+        <!-- Cart Items -->
+        <div class="cart-items" id="cartItemsContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Cart Summary -->
+        <aside class="cart-summary" id="cartSummaryPanel">
+          <h2>Order Summary</h2>
+          <div class="summary-row">
+            <span class="label">Subtotal</span>
+            <span class="value" id="summarySubtotal">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Estimated Tax (5%)</span>
+            <span class="value" id="summaryTax">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Shipping</span>
+            <span class="value" id="summaryShipping">Calculated at checkout</span>
+          </div>
+          
+          <div class="summary-row total">
+            <span class="label">Grand Total</span>
+            <span class="value" id="summaryTotal">$0.00</span>
+          </div>
+          
+          <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 24px;" onclick="checkout()">
+            Proceed to Checkout 🔒
+          </button>
+          
+          <button class="clear-cart" onclick="clearCart()">
+            Clear Shopping Cart
+          </button>
+        </aside>
+      </div>
+
+      <!-- Empty Cart View (Hidden by default) -->
+      <div class="empty-cart" id="emptyCartView" style="display: none;">
+        <div class="empty-icon">🛒</div>
+        <h2>Your cart is currently empty.</h2>
+        <p>Before proceed to checkout you must add some products to your shopping cart.<br>You will find a lot of interesting products on our "Products" page.</p>
+        <a href="products.html" class="btn btn-primary" style="margin-top: 16px;">
+          Return to Shop
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <div class="footer-logo">
+            <div class="logo-icon">⚡</div>
+            <span>Smart Electronics</span>
+          </div>
+          <p>Your trusted destination for premium electronics. Cutting-edge technology with exceptional service since 2015.</p>
+          <div class="social-links">
+            <a href="#" title="Facebook">📘</a>
+            <a href="#" title="Twitter">🐦</a>
+            <a href="#" title="Instagram">📸</a>
+            <a href="#" title="YouTube">🎬</a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="cart.html">Shopping Cart</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Categories</h3>
+          <ul>
+            <li><a href="products.html?category=TV+%26+Display">TV & Display</a></li>
+            <li><a href="products.html?category=Kitchen+Appliances">Kitchen Appliances</a></li>
+            <li><a href="products.html?category=Cooling">Cooling</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Contact Info</h3>
+          <div class="footer-contact-item">
+            <div class="icon">📍</div>
+            <span>sayednogor,vatara,badda,dhaka</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">📞</div>
+            <span>01712668528</span>
+          </div>
+          <div class="footer-contact-item">
+            <div class="icon">✉️</div>
+            <span>riadshikder10@gmail.com</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Smart Electronics. All rights reserved.</p>
+        <p>Designed with ❤️ for modern living</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top -->
+  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>
