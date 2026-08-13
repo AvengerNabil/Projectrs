@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+    
+    <!-- Live Camera Container -->
+    <div class="glass-card" style="flex: 2; min-width: 320px;">
+        <h2>Live Attendance Feed</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 15px;">Real-time Automated AI Face Recognition</p>
+
+        <div style="position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; margin: 0 auto; border-radius: 8px; overflow: hidden; background: #000; border: 2px solid var(--border-color);">
+            <video id="videoElement" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+            <canvas id="overlayCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+            <canvas id="captureCanvas" style="display: none;"></canvas>
+        </div>
+    </div>
+    
+    <!-- Real-time Status Panel -->
+    <div class="glass-card" style="flex: 1; min-width: 280px; display: flex; flex-direction: column;">
+        <h2>Recognition Status</h2>
+        
+        <div id="status-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 20px; padding: 25px; border-radius: 12px; background: rgba(0,0,0,0.15); transition: all 0.3s ease;">
+            <div id="status-indicator" style="font-size: 1.3rem; font-weight: bold; margin-bottom: 15px;">Initializing Camera...</div>
+            
+            <div id="user-info" style="display: none; text-align: center; width: 100%;">
+                <h3 id="user-name" style="margin-bottom: 5px; color: var(--accent-color); font-size: 1.4rem;">-</h3>
+                <p id="user-role" style="text-transform: capitalize; color: var(--text-secondary); margin-bottom: 15px;">-</p>
+                <div id="action-msg" class="badge" style="padding: 8px 16px; font-size: 0.95rem;">-</div>
+            </div>
+            
+            <div id="system-msg" style="color: var(--text-secondary); font-size: 0.9rem; text-align: center; margin-top: 10px;">
+                Looking for faces...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const video = document.getElementById('videoElement');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const captureCtx = captureCanvas.getContext('2d');
+    const overlayCtx = overlayCanvas.getContext('2d');
+
+    let isProcessing = false;
+
+    // Access user webcam with flexible constraints
+    const constraints = {
+        video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: "user"
+        }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
+                captureCanvas.width = video.videoWidth || 640;
+                captureCanvas.height = video.videoHeight || 480;
+                overlayCanvas.width = video.videoWidth || 640;
+                overlayCanvas.height = video.videoHeight || 480;
+                document.getElementById('status-indicator').innerText = 'Searching...';
+                startRecognitionLoop();
+            };
+        })
+        .catch(err => {
+            console.error("Webcam Access Error: ", err);
+            let userErrMsg = 'Please allow webcam access in your browser.';
+            if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                userErrMsg = 'Camera is already in use by another application (Zoom, Teams, etc.). Please close it and refresh.';
+            } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                userErrMsg = 'Camera permission denied. Please click the camera icon in your browser address bar to allow access.';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                userErrMsg = 'No camera found on your device.';
+            } else {
+                userErrMsg = `Camera Error: ${err.name} - ${err.message || 'Access failed'}`;
+            }
+
+            document.getElementById('status-indicator').innerText = 'Camera Error';
+            document.getElementById('status-indicator').style.color = 'var(--danger)';
+            document.getElementById('system-msg').innerText = userErrMsg;
+        });
+
+    function startRecognitionLoop() {
+        setInterval(sendFrameForRecognition, 300); // 3-4 fps for real-time recognition
+    }
+
+    function sendFrameForRecognition() {
+        if (isProcessing || !video.videoWidth) return;
+        isProcessing = true;
+
+        captureCtx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+        const imageData = captureCanvas.toDataURL('image/jpeg', 0.7);
+
+        fetch('{{ url_for("camera.process_frame") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageData })
+        })
+        .then(res => res.json())
+        .then(data => {
+            updateUI(data);
+        })
+        .catch(err => {
+            console.error(err);
+        })
+        .finally(() => {
+            isProcessing = false;
+        });
+    }
+
+    function updateUI(data) {
+        const box = document.getElementById('status-box');
+        const indicator = document.getElementById('status-indicator');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const userRole = document.getElementById('user-role');
+        const actionMsg = document.getElementById('action-msg');
+        const systemMsg = document.getElementById('system-msg');
+
+        // Clear canvas box overlay
+        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+        indicator.innerText = data.status || 'Searching...';
+
+        if (data.box) {
+            // Draw box on overlay
+            const { x, y, w, h } = data.box;
+            const color = data.status === 'Recognized' ? '#10b981' : '#ef4444';
+            
+            overlayCtx.strokeStyle = color;
+            overlayCtx.lineWidth = 3;
+            overlayCtx.strokeRect(x, y, w, h);
+
+            if (data.user && data.user.name) {
+                overlayCtx.fillStyle = color;
+                overlayCtx.font = 'bold 16px Inter, sans-serif';
+                overlayCtx.fillText(data.user.name, x, y > 20 ? y - 8 : y + 20);
+            }
+        }
+
+        if (data.status === 'Recognized' && data.user) {
+            userInfo.style.display = 'block';
+            userName.innerText = data.user.name;
+            userRole.innerText = data.user.role + (data.user.department_name ? ` • ${data.user.department_name}` : '');
+            actionMsg.innerText = data.message;
+            systemMsg.innerText = 'Attendance recorded automatically';
+
+            const msgLower = (data.message || '').toLowerCase();
+            if (msgLower.includes('present')) {
+                actionMsg.className = 'badge badge-present';
+                box.style.border = '2px solid var(--success)';
+            } else if (msgLower.includes('late')) {
+                actionMsg.className = 'badge badge-late';
+                box.style.border = '2px solid var(--warning)';
+            } else {
+                actionMsg.className = 'badge badge-present';
+                box.style.border = '2px solid var(--success)';
+            }
+        } else if (data.status === 'Unknown') {
+            userInfo.style.display = 'none';
+            systemMsg.innerText = data.message || 'Unrecognized face';
+            box.style.border = '2px solid var(--danger)';
+        } else {
+            userInfo.style.display = 'none';
+            systemMsg.innerText = 'Looking for faces in camera view...';
+            box.style.border = '1px solid var(--border-color)';
+        }
+    }
+</script>
+{% endblock %}

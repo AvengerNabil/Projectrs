@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+    <h2 style="text-align: center; margin-bottom: 20px;">Face Registration</h2>
+    
+    <div id="status-message" style="text-align: center; margin-bottom: 20px; color: var(--text-secondary);">
+        Please look directly at the camera.
+    </div>
+
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <video id="videoElement" width="640" height="480" autoplay style="border-radius: 8px; border: 2px solid var(--border-color);"></video>
+        <canvas id="canvasElement" width="640" height="480" style="display: none;"></canvas>
+    </div>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <progress id="progressBar" value="0" max="10" style="width: 100%; height: 20px;"></progress>
+        <div id="progressText" style="margin-top: 5px;">0 / 10 samples collected</div>
+    </div>
+    
+    <div style="text-align: center;">
+        <button id="startBtn" class="btn btn-primary" onclick="startCapture()">Start Registration</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const video = document.getElementById('videoElement');
+    const canvas = document.getElementById('canvasElement');
+    const ctx = canvas.getContext('2d');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const statusMessage = document.getElementById('status-message');
+    const startBtn = document.getElementById('startBtn');
+    
+    const TARGET_SAMPLES = 10;
+    let encodings = [];
+    let isCapturing = false;
+    
+    // Request webcam access with flexible constraints
+    const constraints = {
+        video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: "user"
+        }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                video.play();
+            };
+        })
+        .catch(err => {
+            console.error("Webcam Registration Error: ", err);
+            let msg = "Error: Camera access denied or not available.";
+            if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                msg = "Camera is in use by another application. Please close Zoom/Teams/Camera app and refresh.";
+            } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                msg = "Camera permission denied. Please click the lock/camera icon in your address bar.";
+            }
+            statusMessage.innerText = msg;
+            statusMessage.style.color = "var(--danger)";
+            startBtn.disabled = true;
+        });
+        
+    function startCapture() {
+        if (isCapturing) return;
+        isCapturing = true;
+        encodings = [];
+        startBtn.disabled = true;
+        startBtn.innerText = "Capturing...";
+        progressBar.value = 0;
+        updateProgress();
+        captureFrame();
+    }
+    
+    function updateProgress() {
+        progressBar.value = encodings.length;
+        progressText.innerText = `${encodings.length} / ${TARGET_SAMPLES} samples collected`;
+    }
+    
+    function captureFrame() {
+        if (encodings.length >= TARGET_SAMPLES) {
+            finalizeRegistration();
+            return;
+        }
+        
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        
+        fetch('{{ url_for("users.face_register") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ image: imageData })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                encodings.push(data.encoding);
+                statusMessage.innerText = "Sample accepted.";
+                statusMessage.style.color = "var(--success)";
+            } else {
+                statusMessage.innerText = data.message;
+                statusMessage.style.color = "var(--warning)";
+            }
+            updateProgress();
+            // Wait briefly before next capture attempt
+            setTimeout(captureFrame, 500);
+        })
+        .catch(err => {
+            console.error(err);
+            setTimeout(captureFrame, 500);
+        });
+    }
+    
+    function finalizeRegistration() {
+        statusMessage.innerText = "Processing final registration...";
+        statusMessage.style.color = "var(--text-secondary)";
+        
+        fetch('{{ url_for("users.finalize_face_registration") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ encodings: encodings })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                statusMessage.innerText = data.message + " Redirecting...";
+                statusMessage.style.color = "var(--success)";
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('users.profile') }}";
+                }, 2000);
+            } else {
+                statusMessage.innerText = "Error: " + data.message;
+                statusMessage.style.color = "var(--danger)";
+                startBtn.disabled = false;
+                startBtn.innerText = "Try Again";
+                isCapturing = false;
+            }
+        });
+    }
+</script>
+{% endblock %}

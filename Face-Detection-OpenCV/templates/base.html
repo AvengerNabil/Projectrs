@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Attendance</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-mode"> <!-- Default to dark mode as requested for modern look -->
+    <div class="app-container">
+        
+        {% if user %}
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>AI.ttendance</h2>
+            </div>
+            <ul class="nav-links">
+                {% if user.role == 'admin' %}
+                    <li><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('camera.live_dashboard') }}">Live Camera</a></li>
+                    <li><a href="{{ url_for('admin.users') }}">Users</a></li>
+                    <li><a href="{{ url_for('attendance.index') }}">Attendance Log</a></li>
+                    <li><a href="{{ url_for('admin.departments') }}">Departments</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('users.profile') }}">My Profile</a></li>
+                    <li><a href="{{ url_for('users.my_attendance') }}">My Attendance</a></li>
+                    <li><a href="{{ url_for('users.face_register') }}">Register Face</a></li>
+                {% endif %}
+            </ul>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout">Logout</a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% if user %}
+            <header class="topbar">
+                <div class="welcome-text">
+                    Welcome, <span>{{ user.name }}</span> ({{ user.role }})
+                </div>
+                <div class="theme-toggle">
+                    <button id="theme-btn" onclick="toggleTheme()">☀️ Light Mode</button>
+                </div>
+            </header>
+            {% endif %}
+            
+            <div class="content-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

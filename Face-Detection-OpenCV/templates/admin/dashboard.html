@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header-actions">
+    <h2>Admin Dashboard</h2>
+</div>
+
+<div class="stats-grid">
+    <div class="glass-card stat-card">
+        <h3>Total Users</h3>
+        <div class="value">{{ stats.total_users }}</div>
+    </div>
+    <div class="glass-card stat-card">
+        <h3>Total Students</h3>
+        <div class="value">{{ stats.total_students }}</div>
+    </div>
+    <div class="glass-card stat-card">
+        <h3>Total Teachers</h3>
+        <div class="value">{{ stats.total_teachers }}</div>
+    </div>
+    <div class="glass-card stat-card">
+        <h3>Total Staff</h3>
+        <div class="value">{{ stats.total_staff }}</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="glass-card stat-card" style="border-left: 4px solid var(--success)">
+        <h3>Present Today</h3>
+        <div class="value text-success">{{ stats.present_today }}</div>
+    </div>
+    <div class="glass-card stat-card" style="border-left: 4px solid var(--warning)">
+        <h3>Late Today</h3>
+        <div class="value text-warning">{{ stats.late_today }}</div>
+    </div>
+    <div class="glass-card stat-card" style="border-left: 4px solid var(--danger)">
+        <h3>Absent Today</h3>
+        <div class="value text-danger">{{ stats.absent_today }}</div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <h3>Recent Attendance Activity</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in recent_attendance %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.name }}</td>
+                <td><span style="text-transform: capitalize;">{{ record.role }}</span></td>
+                <td>{{ record.check_in_time }}</td>
+                <td><span class="badge badge-{{ record.status }}">{{ record.status | upper }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center;">No recent attendance records.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

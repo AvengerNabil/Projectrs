@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Attendance Log</h2>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <form method="GET" action="{{ url_for('attendance.index') }}" style="display: inline-flex; gap: 8px;">
+            <input type="date" name="date" value="{{ current_date }}" 
+                   style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: transparent; color: inherit;">
+            <button type="submit" class="btn btn-primary" style="padding: 8px 15px;">Filter Date</button>
+            <a href="{{ url_for('attendance.index', date='all') }}" class="btn" style="padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--border-color);">Show All</a>
+        </form>
+        <a href="{{ url_for('attendance.export', date=current_date) }}" class="btn" style="background: var(--success); color: white;">Export CSV</a>
+        <a href="{{ url_for('attendance.export', date='all') }}" class="btn" style="background: #3b82f6; color: white;">Export All CSV</a>
+    </div>
+</div>
+
+<div class="glass-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Check-in Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.id }}</td>
+                <td>{{ record.name }}</td>
+                <td style="text-transform: capitalize;">{{ record.role }}</td>
+                <td>{{ record.department_name or '-' }}</td>
+                <td>{{ record.check_in_time }}</td>
+                <td><span class="badge badge-{{ record.status }}">{{ record.status | upper }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center;">No records found for this date.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
